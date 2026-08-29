@@ -51,6 +51,13 @@ export class MockApiService {
     return JSON.parse(localStorage.getItem(APPOINTMENTS_KEY) || '[]');
   }
 
+  async getAvailableSlots(doctorId: string, date: string): Promise<string[]> {
+    await delay(400); // Simulate network check
+    // In a real app, this would filter out already booked slots from the database.
+    // For this frontend phase, we return a static mock array of times.
+    return ['09:00', '09:30', '10:00', '11:30', '13:00', '14:30', '16:00'];
+  }
+
   async bookAppointment(appointment: Omit<Appointment, 'id' | 'status'>): Promise<Appointment> {
     await delay();
     const newAppointment: Appointment = {
