@@ -4,9 +4,9 @@ const DOCTORS_KEY = 'booking_doctors';
 const APPOINTMENTS_KEY = 'booking_appointments';
 
 const MOCK_DOCTORS: Doctor[] = [
-  { id: 'd1', name: 'Dr. Alice Smith', specialty: 'General Practice', avatarUrl: 'https://i.pravatar.cc/150?u=d1' },
-  { id: 'd2', name: 'Dr. Bob Jones', specialty: 'Cardiology', avatarUrl: 'https://i.pravatar.cc/150?u=d2' },
-  { id: 'd3', name: 'Dr. Clara Oswald', specialty: 'Neurology', avatarUrl: 'https://i.pravatar.cc/150?u=d3' },
+  { id: 'd1', name: 'Dr. Ayesha', specialty: 'General Practice', avatarUrl: 'https://i.pravatar.cc/150?u=d1' },
+  { id: 'd2', name: 'Dr. Ali', specialty: 'Cardiology', avatarUrl: 'https://i.pravatar.cc/150?u=d2' },
+  { id: 'd3', name: 'Dr. Ahmed', specialty: 'Neurology', avatarUrl: 'https://i.pravatar.cc/150?u=d3' },
 ];
 
 // Utility to simulate network delay
