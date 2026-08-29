@@ -21,7 +21,7 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
   onSuccess,
 }) => {
   const { user } = useAuth();
-  const { api, execute, isLoading, error } = useMockApi();
+  const { api, execute, error } = useMockApi();
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);

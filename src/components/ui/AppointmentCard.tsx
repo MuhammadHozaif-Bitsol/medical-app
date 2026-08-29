@@ -39,15 +39,17 @@ export const AppointmentCard: React.FC<AppointmentCardProps> = ({
           </span>
         </div>
 
-        <div className="text-sm text-slate-600">
-          {isStaffView ? (
+        <div className="text-sm text-slate-600 space-y-1">
+          {isStaffView && (
             <p>
               Patient:{" "}
               <span className="font-medium text-slate-800">
                 {appointment.patientName}
               </span>
             </p>
-          ) : doctorName ? (
+          )}
+
+          {doctorName ? (
             <p>
               Doctor:{" "}
               <span className="font-medium text-slate-800">{doctorName}</span>
