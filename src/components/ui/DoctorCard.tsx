@@ -1,7 +1,7 @@
-import React from 'react';
-import type { Doctor } from '../../types';
-import { Button } from './Button';
-import { LazyImage } from './LazyImage';
+import React from "react";
+import type { Doctor } from "../../types";
+import { Button } from "./Button";
+import { LazyImage } from "./LazyImage";
 
 export interface DoctorCardProps {
   doctor: Doctor;
@@ -9,13 +9,19 @@ export interface DoctorCardProps {
   isSuggested?: boolean;
 }
 
-export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onBookClick, isSuggested }) => {
+export const DoctorCard: React.FC<DoctorCardProps> = ({
+  doctor,
+  onBookClick,
+  isSuggested,
+}) => {
   return (
-    <div className={`p-4 rounded-lg border bg-white flex flex-col sm:flex-row gap-4 items-center sm:items-start ${isSuggested ? 'border-blue-400 shadow-md ring-1 ring-blue-400' : 'border-slate-200 shadow-sm'}`}>
-      <LazyImage 
-        src={doctor.avatarUrl || ''} 
-        alt={doctor.name} 
-        className="w-24 h-24 rounded-full flex-shrink-0 bg-slate-100" 
+    <div
+      className={`p-4 rounded-lg border bg-white flex flex-col sm:flex-row gap-4 items-center sm:items-start ${isSuggested ? "border-blue-400 shadow-md ring-1 ring-blue-400" : "border-slate-200 shadow-sm"}`}
+    >
+      <LazyImage
+        src={doctor.avatarUrl || ""}
+        alt={doctor.name}
+        className="w-24 h-24 rounded-full flex-shrink-0 bg-slate-100"
       />
       <div className="flex-grow text-center sm:text-left">
         <div className="flex items-center gap-2 justify-center sm:justify-start">
@@ -28,12 +34,10 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({ doctor, onBookClick, isS
         </div>
         <p className="text-slate-600 font-medium">{doctor.specialty}</p>
       </div>
-      
+
       {onBookClick && (
         <div className="flex-shrink-0 mt-4 sm:mt-0">
-          <Button onClick={() => onBookClick(doctor.id)}>
-            Book Slot
-          </Button>
+          <Button onClick={() => onBookClick(doctor.id)}>Book Slot</Button>
         </div>
       )}
     </div>

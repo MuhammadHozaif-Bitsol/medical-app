@@ -24,8 +24,7 @@ export const AIAssistant: React.FC = () => {
     });
   }, [api, execute]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitAction = async () => {
     if (!symptoms.trim()) return;
 
     setResult(null); // Clear previous results
@@ -58,13 +57,13 @@ export const AIAssistant: React.FC = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="flex gap-2 mb-4">
+      <form action={submitAction} className="flex gap-2 mb-4">
         <Input
           placeholder="e.g., I have been experiencing severe chest pain..."
           value={symptoms}
           onChange={(e) => setSymptoms(e.target.value)}
           disabled={isLoading}
-          className="flex-grow"
+          className="grow"
         />
         <Button type="submit" isLoading={isLoading} disabled={!symptoms.trim()}>
           Ask AI
@@ -76,7 +75,7 @@ export const AIAssistant: React.FC = () => {
       {result && (
         <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-start gap-2 mb-4 text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200 text-sm">
-            <AlertCircle size={18} className="flex-shrink-0 mt-0.5" />
+            <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <p>
               <strong>Disclaimer:</strong> This is an AI suggestion, not a
               medical diagnosis. In an emergency, call 911.
@@ -84,7 +83,7 @@ export const AIAssistant: React.FC = () => {
           </div>
 
           <p className="text-slate-700 font-medium mb-3">
-            <span className="text-blue-600 font-bold">Reasoning:</span>{" "}
+            <span className="text-blue-600 font-bold">Reasoning:</span>
             {result.reason}
           </p>
 

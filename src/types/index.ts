@@ -1,4 +1,4 @@
-export type Role = 'patient' | 'staff';
+export type Role = "patient" | "staff";
 
 export interface User {
   id: string;
@@ -19,7 +19,7 @@ export interface Appointment {
   patientId: string;
   patientName: string;
   dateTimeUtc: string; // ISO 8601 UTC string
-  status: 'confirmed' | 'cancelled';
+  status: "confirmed" | "cancelled";
 }
 
 export interface AuthResponse {

@@ -32,7 +32,7 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
     handleSubmit,
     watch,
     setValue,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<BookingFormData>();
 
   const selectedDoctorId = watch("doctorId");
@@ -105,10 +105,14 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         {/* Doctor Selection */}
         <div className="flex flex-col gap-1">
-          <label className="text-sm font-medium text-slate-700">
+          <label
+            htmlFor="doctor-select"
+            className="text-sm font-medium text-slate-700"
+          >
             Select Specialist
           </label>
           <select
+            id="doctor-select"
             {...register("doctorId", { required: "Please select a doctor" })}
             className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           >
@@ -139,38 +143,46 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
         {/* Time Slots (Conditionally rendered) */}
         {selectedDoctorId && selectedDate && (
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-medium text-slate-700">
+            <span className="text-sm font-medium text-slate-700">
               Available Times
-            </label>
+            </span>
 
-            {isFetchingSlots ? (
-              <div className="text-sm text-slate-500 animate-pulse">
-                Loading slots...
-              </div>
-            ) : availableSlots.length > 0 ? (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                {availableSlots.map((time) => (
-                  <button
-                    key={time}
-                    type="button"
-                    onClick={() =>
-                      setValue("time", time, { shouldValidate: true })
-                    }
-                    className={`py-2 px-3 text-sm rounded-md border font-medium transition-colors ${
-                      selectedTime === time
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-white text-slate-700 border-slate-300 hover:border-blue-500 hover:bg-blue-50"
-                    }`}
-                  >
-                    {time}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <div className="text-sm text-slate-500 bg-slate-50 p-3 rounded border">
-                No slots available on this date.
-              </div>
-            )}
+            {(() => {
+              if (isFetchingSlots) {
+                return (
+                  <div className="text-sm text-slate-500 animate-pulse">
+                    Loading slots...
+                  </div>
+                );
+              }
+              if (availableSlots.length > 0) {
+                return (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                    {availableSlots.map((time) => (
+                      <button
+                        key={time}
+                        type="button"
+                        onClick={() =>
+                          setValue("time", time, { shouldValidate: true })
+                        }
+                        className={`py-2 px-3 text-sm rounded-md border font-medium transition-colors ${
+                          selectedTime === time
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-slate-700 border-slate-300 hover:border-blue-500 hover:bg-blue-50"
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                );
+              }
+              return (
+                <div className="text-sm text-slate-500 bg-slate-50 p-3 rounded border">
+                  No slots available on this date.
+                </div>
+              );
+            })()}
             {/* Hidden input to register 'time' with react-hook-form */}
             <input
               type="hidden"
@@ -188,7 +200,7 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
           <Button
             type="submit"
             className="w-full"
-            isLoading={isLoading}
+            isLoading={isSubmitting}
             disabled={!selectedDoctorId || !selectedDate || !selectedTime}
           >
             Confirm Booking

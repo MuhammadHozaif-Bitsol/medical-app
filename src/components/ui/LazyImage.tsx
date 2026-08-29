@@ -1,6 +1,6 @@
-import React from 'react';
-import { LazyLoadImage } from 'react-lazy-load-image-component';
-import 'react-lazy-load-image-component/src/effects/blur.css';
+import React from "react";
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 export interface LazyImageProps {
   src: string;
@@ -8,7 +8,11 @@ export interface LazyImageProps {
   className?: string;
 }
 
-export const LazyImage: React.FC<LazyImageProps> = ({ src, alt = '', className = '' }) => {
+export const LazyImage: React.FC<LazyImageProps> = ({
+  src,
+  alt = "",
+  className = "",
+}) => {
   return (
     <div className={`overflow-hidden ${className}`}>
       <LazyLoadImage
@@ -21,4 +25,3 @@ export const LazyImage: React.FC<LazyImageProps> = ({ src, alt = '', className =
     </div>
   );
 };
- 
