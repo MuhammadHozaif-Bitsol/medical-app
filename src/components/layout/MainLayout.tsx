@@ -1,15 +1,15 @@
-import React from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { Button } from '../ui/Button';
+import React from "react";
+import { Outlet, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Button } from "../ui/Button";
 
 export const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout(); 
-    navigate('/login');
+    logout();
+    navigate("/login");
   };
 
   return (
@@ -22,20 +22,25 @@ export const MainLayout: React.FC = () => {
             </div>
             <span className="font-bold text-xl text-slate-800">MedBook</span>
           </div>
-          
+
           {user && (
             <div className="flex items-center gap-4">
               <span className="text-sm text-slate-600">
-                Hi, <strong className="text-slate-800">{user.name}</strong> ({user.role})
+                Hi, <strong className="text-slate-800">{user.name}</strong> (
+                {user.role})
               </span>
-              <Button variant="outline" onClick={handleLogout} className="text-sm py-1">
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="text-sm py-1"
+              >
                 Sign Out
               </Button>
             </div>
           )}
         </div>
       </header>
-      
+
       <main className="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
         <Outlet />
       </main>
