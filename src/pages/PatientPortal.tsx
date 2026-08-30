@@ -58,14 +58,38 @@ export const PatientPortal: React.FC = () => {
     }
   };
 
+  let appointmentsContent;
+  if (isLoading && appointments.length === 0) {
+    appointmentsContent = (
+      <p className="text-slate-500 animate-pulse">Loading appointments...</p>
+    );
+  } else if (appointments.length > 0) {
+    appointmentsContent = (
+      <div className="space-y-4">
+        {appointments.map((apt) => (
+          <AppointmentCard
+            key={apt.id}
+            appointment={apt}
+            doctorName={doctorsMap[apt.doctorId]}
+            onCancelClick={requestCancel}
+          />
+        ))}
+      </div>
+    );
+  } else {
+    appointmentsContent = (
+      <div className="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 shadow-sm">
+        You have no upcoming appointments.
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-5xl mx-auto pb-12">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-800">
-          Welcome, {user?.name}
-        </h1>
+        <h1 className="text-3xl font-bold text-slate-800">Patient Portal</h1>
         <p className="text-slate-600">
-          Manage your appointments and get AI assistance.
+          Welcome back, {user?.name}. Book and manage your appointments here.
         </p>
       </div>
 
@@ -80,26 +104,7 @@ export const PatientPortal: React.FC = () => {
             <h2 className="text-2xl font-bold text-slate-800 mb-4">
               Your Appointments
             </h2>
-            {isLoading && appointments.length === 0 ? (
-              <p className="text-slate-500 animate-pulse">
-                Loading appointments...
-              </p>
-            ) : appointments.length > 0 ? (
-              <div className="space-y-4">
-                {appointments.map((apt) => (
-                  <AppointmentCard
-                    key={apt.id}
-                    appointment={apt}
-                    doctorName={doctorsMap[apt.doctorId]}
-                    onCancelClick={requestCancel}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white p-6 rounded-xl border border-slate-200 text-center text-slate-500 shadow-sm">
-                You have no upcoming appointments.
-              </div>
-            )}
+            {appointmentsContent}
           </section>
         </div>
 

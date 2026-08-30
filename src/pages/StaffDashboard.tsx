@@ -5,7 +5,6 @@ import type { Appointment, Doctor } from "../types";
 import { AppointmentCard } from "../components/ui/AppointmentCard";
 import { Modal } from "../components/ui/Modal";
 import { Button } from "../components/ui/Button";
-import { Input } from "../components/ui/Input";
 
 const POSSIBLE_SLOTS = [
   "09:00",
@@ -42,9 +41,6 @@ export const StaffDashboard: React.FC = () => {
   // Appointments Tab State
   const [cancelId, setCancelId] = useState<string | null>(null);
 
-  // Doctors Tab State
-  // No longer needed as per request
-
   // Schedules Tab State
   const [selectedDoctorId, setSelectedDoctorId] = useState<string | null>(null);
   const [doctorSchedule, setDoctorSchedule] = useState<string[]>([]);
@@ -62,7 +58,7 @@ export const StaffDashboard: React.FC = () => {
     }).then((res) => {
       if (res) {
         setDoctors(res.docs);
-        const sortedApts = res.apts.sort(
+        const sortedApts = [...res.apts].sort(
           (a, b) =>
             new Date(a.dateTimeUtc).getTime() -
             new Date(b.dateTimeUtc).getTime(),
@@ -92,7 +88,6 @@ export const StaffDashboard: React.FC = () => {
     }
   };
 
-  // --- Doctors Handlers ---
   // --- Schedules Handlers ---
   useEffect(() => {
     if (selectedDoctorId && activeTab === "schedules") {
@@ -106,7 +101,7 @@ export const StaffDashboard: React.FC = () => {
     setDoctorSchedule((prev) =>
       prev.includes(slot)
         ? prev.filter((s) => s !== slot)
-        : [...prev, slot].sort(),
+        : [...prev, slot].sort((a, b) => a.localeCompare(b)),
     );
   };
 
@@ -120,6 +115,37 @@ export const StaffDashboard: React.FC = () => {
     setIsScheduleSaved(true);
     setTimeout(() => setIsScheduleSaved(false), 3000);
   };
+
+  let appointmentsContent;
+  if (isLoading && appointments.length === 0) {
+    appointmentsContent = (
+      <div className="text-center py-10">
+        <p className="text-slate-500 animate-pulse">Loading appointments...</p>
+      </div>
+    );
+  } else if (appointments.length > 0) {
+    appointmentsContent = (
+      <div className="space-y-4">
+        {appointments.map((apt) => (
+          <AppointmentCard
+            key={apt.id}
+            appointment={apt}
+            doctorName={doctorsMap[apt.doctorId]}
+            isStaffView={true}
+            onCancelClick={(id) => setCancelId(id)}
+          />
+        ))}
+      </div>
+    );
+  } else {
+    appointmentsContent = (
+      <div className="text-center py-10 bg-slate-50 rounded-lg border border-slate-100">
+        <p className="text-slate-500">
+          There are no appointments booked in the system yet.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto pb-12">
@@ -139,18 +165,21 @@ export const StaffDashboard: React.FC = () => {
       {/* Tabs */}
       <div className="flex space-x-1 bg-slate-100 p-1 rounded-lg mb-6 w-full sm:w-auto overflow-x-auto">
         <button
+          type="button"
           className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === "appointments" ? "bg-white shadow-sm text-slate-800" : "text-slate-600 hover:text-slate-800"}`}
           onClick={() => setActiveTab("appointments")}
         >
           Appointments
         </button>
         <button
+          type="button"
           className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === "doctors" ? "bg-white shadow-sm text-slate-800" : "text-slate-600 hover:text-slate-800"}`}
           onClick={() => setActiveTab("doctors")}
         >
           Doctors & Departments
         </button>
         <button
+          type="button"
           className={`px-4 py-2 rounded-md font-medium text-sm transition-colors ${activeTab === "schedules" ? "bg-white shadow-sm text-slate-800" : "text-slate-600 hover:text-slate-800"}`}
           onClick={() => setActiveTab("schedules")}
         >
@@ -165,31 +194,7 @@ export const StaffDashboard: React.FC = () => {
             <h2 className="text-xl font-bold text-slate-800 mb-6">
               All Appointments
             </h2>
-            {isLoading && appointments.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-slate-500 animate-pulse">
-                  Loading appointments...
-                </p>
-              </div>
-            ) : appointments.length > 0 ? (
-              <div className="space-y-4">
-                {appointments.map((apt) => (
-                  <AppointmentCard
-                    key={apt.id}
-                    appointment={apt}
-                    doctorName={doctorsMap[apt.doctorId]}
-                    isStaffView={true}
-                    onCancelClick={(id) => setCancelId(id)}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-10 bg-slate-50 rounded-lg border border-slate-100">
-                <p className="text-slate-500">
-                  There are no appointments booked in the system yet.
-                </p>
-              </div>
-            )}
+            {appointmentsContent}
           </div>
         )}
 
@@ -268,6 +273,7 @@ export const StaffDashboard: React.FC = () => {
                 <div className="flex flex-col gap-2">
                   {doctors.map((doc) => (
                     <button
+                      type="button"
                       key={doc.id}
                       onClick={() => setSelectedDoctorId(doc.id)}
                       className={`text-left px-4 py-3 rounded-lg border transition-colors ${selectedDoctorId === doc.id ? "bg-blue-50 border-blue-200 text-blue-800 font-medium" : "bg-white border-slate-200 hover:bg-slate-50 text-slate-700"}`}
@@ -306,6 +312,7 @@ export const StaffDashboard: React.FC = () => {
                         const isSelected = doctorSchedule.includes(slot);
                         return (
                           <button
+                            type="button"
                             key={slot}
                             onClick={() => toggleSlot(slot)}
                             className={`px-3 py-2 rounded-md border text-sm font-medium transition-colors flex items-center justify-center gap-2
