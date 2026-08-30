@@ -21,9 +21,9 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({
       <LazyImage
         src={doctor.avatarUrl || ""}
         alt={doctor.name}
-        className="w-24 h-24 rounded-full flex-shrink-0 bg-slate-100"
+        className="w-24 h-24 rounded-full shrink-0 bg-slate-100"
       />
-      <div className="flex-grow text-center sm:text-left">
+      <div className="grow text-center sm:text-left">
         <div className="flex items-center gap-2 justify-center sm:justify-start">
           <h3 className="text-lg font-bold text-slate-800">{doctor.name}</h3>
           {isSuggested && (
@@ -36,7 +36,7 @@ export const DoctorCard: React.FC<DoctorCardProps> = ({
       </div>
 
       {onBookClick && (
-        <div className="flex-shrink-0 mt-4 sm:mt-0">
+        <div className="shrink-0 mt-4 sm:mt-0">
           <Button onClick={() => onBookClick(doctor.id)}>Book Slot</Button>
         </div>
       )}
