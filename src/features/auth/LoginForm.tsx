@@ -1,81 +1,135 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 
-interface LoginFormData {
+interface AuthFormData {
   name: string;
-  role: "patient" | "staff";
+  email: string;
+  password: string;
 }
 
 export const LoginForm: React.FC = () => {
+  const [isLoginMode, setIsLoginMode] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
-    defaultValues: { role: "patient" },
-  });
-  const { login } = useAuth();
+  } = useForm<AuthFormData>();
+
+  const { login, registerPatient } = useAuth();
   const navigate = useNavigate();
 
-  const onSubmit = async (data: LoginFormData) => {
+  const toggleMode = () => {
+    setIsLoginMode((prev) => !prev);
+    setAuthError(null);
+    reset();
+  };
+
+  const onSubmit = async (data: AuthFormData) => {
+    setAuthError(null);
     try {
-      await login(data.role, data.name);
-      if (data.role === "patient") {
-        navigate("/patient");
+      if (isLoginMode) {
+        await login(data.email, data.password);
       } else {
-        navigate("/staff");
+        await registerPatient(data.name, data.email, data.password);
       }
-    } catch (error) {
-      console.error("Login failed", error);
+
+      // Navigate based on the newly saved user in local storage
+      const storedUser = localStorage.getItem("auth_user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.role === "staff") {
+          navigate("/staff");
+        } else {
+          navigate("/patient");
+        }
+      }
+    } catch (error: any) {
+      setAuthError(error.message || "Authentication failed. Please try again.");
     }
   };
 
   return (
-    <div className="max-w-md w-full mx-auto p-6 bg-white rounded-xl shadow-md border border-slate-200">
-      <div className="mb-6 text-center">
-        <h2 className="text-2xl font-bold text-slate-800">Welcome Back</h2>
-        <p className="text-slate-600 mt-1">Please sign in to continue</p>
+    <div className="max-w-md w-full mx-auto p-8 bg-white rounded-xl shadow-lg border border-slate-100">
+      <div className="mb-8 text-center">
+        <h2 className="text-2xl font-bold text-slate-800">
+          {isLoginMode ? "Welcome Back" : "Create an Account"}
+        </h2>
+        <p className="text-slate-500 mt-2">
+          {isLoginMode
+            ? "Sign in to access your dashboard"
+            : "Register as a patient to book appointments"}
+        </p>
       </div>
 
+      {authError && (
+        <div className="mb-6 p-3 bg-red-50 text-red-700 text-sm rounded-md border border-red-100">
+          {authError}
+        </div>
+      )}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        {!isLoginMode && (
+          <Input
+            label="Full Name"
+            placeholder="e.g. John Doe"
+            {...register("name", {
+              required: !isLoginMode ? "Name is required" : false,
+            })}
+            error={errors.name?.message}
+          />
+        )}
+
         <Input
-          label="Full Name"
-          placeholder="e.g. John Doe"
-          {...register("name", { required: "Name is required" })}
-          error={errors.name?.message}
+          label="Email Address"
+          type="email"
+          placeholder="you@example.com"
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /\S+@\S+\.\S+/,
+              message: "Please enter a valid email address",
+            },
+          })}
+          error={errors.email?.message}
         />
 
-        <div className="flex flex-col gap-1">
-          <label
-            htmlFor="role-select"
-            className="text-sm font-medium text-slate-700"
-          >
-            Role
-          </label>
-          <select
-            id="role-select"
-            {...register("role")}
-            className="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
-            <option value="patient">Patient</option>
-            <option value="staff">Staff</option>
-          </select>
-        </div>
+        <Input
+          label="Password"
+          type="password"
+          placeholder="••••••••"
+          {...register("password", {
+            required: "Password is required",
+            minLength: {
+              value: 6,
+              message: "Password must be at least 6 characters",
+            },
+          })}
+          error={errors.password?.message}
+        />
 
         <div className="pt-2">
           <Button type="submit" className="w-full" isLoading={isSubmitting}>
-            Sign In
+            {isLoginMode ? "Sign In" : "Register"}
           </Button>
         </div>
       </form>
 
-      <div className="mt-6 text-sm text-slate-500 text-center bg-slate-50 p-3 rounded">
-        <strong>Demo Note:</strong> Use any name. Selecting Patient or Staff
-        routes you to different portals.
+      <div className="mt-6 text-center text-sm text-slate-600">
+        {isLoginMode ? "Don't have an account? " : "Already have an account? "}
+        <button
+          type="button"
+          onClick={toggleMode}
+          className="text-blue-600 hover:text-blue-700 font-medium hover:underline"
+        >
+          {isLoginMode ? "Sign up here" : "Sign in here"}
+        </button>
       </div>
     </div>
   );

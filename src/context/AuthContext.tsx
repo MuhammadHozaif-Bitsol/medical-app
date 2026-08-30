@@ -13,7 +13,12 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (role: "patient" | "staff", name: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  registerPatient: (
+    name: string,
+    email: string,
+    password: string,
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -38,10 +43,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(false);
   }, []);
 
-  const login = useCallback(async (role: "patient" | "staff", name: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const response = await mockApi.login(role, name);
+      const response = await mockApi.login(email, password);
       setToken(response.token);
       setUser(response.user);
       localStorage.setItem("auth_token", response.token);
@@ -50,6 +55,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(false);
     }
   }, []);
+
+  const registerPatient = useCallback(
+    async (name: string, email: string, password: string) => {
+      setIsLoading(true);
+      try {
+        const response = await mockApi.registerPatient(name, email, password);
+        setToken(response.token);
+        setUser(response.user);
+        localStorage.setItem("auth_token", response.token);
+        localStorage.setItem("auth_user", JSON.stringify(response.user));
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   const logout = useCallback(() => {
     setToken(null);
@@ -64,9 +85,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       token,
       isLoading,
       login,
+      registerPatient,
       logout,
     }),
-    [user, token, isLoading, login, logout],
+    [user, token, isLoading, login, registerPatient, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

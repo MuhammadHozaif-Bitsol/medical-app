@@ -48,9 +48,7 @@ export const AIAssistant: React.FC = () => {
           <Bot size={24} />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-slate-800">
-            AI Triage Assistant
-          </h2>
+          <h2 className="text-xl font-bold text-slate-800">AI Assistant</h2>
           <p className="text-sm text-slate-500">
             Describe your symptoms to find the right specialist.
           </p>
@@ -78,7 +76,7 @@ export const AIAssistant: React.FC = () => {
             <AlertCircle size={18} className="shrink-0 mt-0.5" />
             <p>
               <strong>Disclaimer:</strong> This is an AI suggestion, not a
-              medical diagnosis. In an emergency, call 911.
+              medical diagnosis.
             </p>
           </div>
 

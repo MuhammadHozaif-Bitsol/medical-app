@@ -32,6 +32,7 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<BookingFormData>();
 
@@ -55,6 +56,10 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
         .then((slots) => {
           setAvailableSlots(slots);
           setValue("time", ""); // Reset time selection when slots change
+        })
+        .catch((err) => {
+          console.error("Failed to fetch slots:", err);
+          setAvailableSlots([]);
         })
         .finally(() => setIsFetchingSlots(false));
     } else {
@@ -86,6 +91,7 @@ export const AppointmentBookingForm: React.FC<AppointmentBookingFormProps> = ({
 
     const result = await execute(() => api.bookAppointment(appointmentPayload));
     if (result) {
+      reset(); // Clear form fields
       onSuccess();
     }
   };

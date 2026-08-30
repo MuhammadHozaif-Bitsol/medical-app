@@ -3,6 +3,7 @@ export type Role = "patient" | "staff";
 export interface User {
   id: string;
   name: string;
+  email: string;
   role: Role;
 }
 
