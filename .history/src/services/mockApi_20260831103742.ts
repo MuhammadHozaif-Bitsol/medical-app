@@ -47,6 +47,7 @@ const MOCK_STAFF = {
   role: "staff",
 };
 
+// Utility to simulate network delay
 const delay = (ms: number = 200) =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -74,12 +75,9 @@ export class MockApiService {
   async login(email: string, password: string): Promise<AuthResponse> {
     await delay();
     const users: any[] = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-    const normalizedEmail = email.toLowerCase().trim();
 
     const user = users.find(
-      (u) =>
-        u.email.toLowerCase().trim() === normalizedEmail &&
-        u.password === password,
+      (u) => u.email === email && u.password === password,
     );
     if (!user) {
       throw new Error("Invalid email or password");
@@ -91,7 +89,9 @@ export class MockApiService {
       email: user.email,
       role: user.role,
     };
-    const token = `mock_token_${crypto.randomUUID()}`;
+    const token = btoa(
+      JSON.stringify({ userId: authUser.id, role: authUser.role }),
+    );
     return { token, user: authUser };
   }
 
@@ -102,16 +102,15 @@ export class MockApiService {
   ): Promise<AuthResponse> {
     await delay();
     const users: any[] = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
-    const normalizedEmail = email.toLowerCase().trim();
 
-    if (users.some((u) => u.email.toLowerCase().trim() === normalizedEmail)) {
+    if (users.some((u) => u.email === email)) {
       throw new Error("Email is already registered");
     }
 
     const newUser = {
       id: `u_${crypto.randomUUID()}`,
-      name: name.trim(),
-      email: normalizedEmail,
+      name,
+      email,
       password,
       role: "patient" as const,
     };
@@ -125,7 +124,9 @@ export class MockApiService {
       email: newUser.email,
       role: newUser.role,
     };
-    const token = `mock_token_${crypto.randomUUID()}`;
+    const token = btoa(
+      JSON.stringify({ userId: authUser.id, role: authUser.role }),
+    );
     return { token, user: authUser };
   }
 
@@ -186,12 +187,16 @@ export class MockApiService {
   ): Promise<string[]> {
     await delay(100);
     const allSlots = await this.getDoctorSchedule(doctorId);
+
+    // Fetch all existing appointments
     const appointments = await this.getAppointments();
 
+    // Find confirmed appointments for this doctor on the selected local date
     const bookedTimes = appointments
       .filter((apt) => apt.doctorId === doctorId && apt.status === "confirmed")
       .map((apt) => {
         const localDate = parseISO(apt.dateTimeUtc);
+        // If the appointment is on the requested date, extract the time
         if (format(localDate, "yyyy-MM-dd") === dateStr) {
           return format(localDate, "HH:mm");
         }
@@ -199,6 +204,7 @@ export class MockApiService {
       })
       .filter(Boolean) as string[];
 
+    // Return only the slots that have not been booked
     return allSlots.filter((slot) => !bookedTimes.includes(slot));
   }
 
@@ -206,8 +212,10 @@ export class MockApiService {
     appointment: Omit<Appointment, "id" | "status">,
   ): Promise<Appointment> {
     await delay();
+
     const appointments = await this.getAppointments();
 
+    // Prevent double booking at the mock database level
     const isTaken = appointments.some(
       (apt) =>
         apt.doctorId === appointment.doctorId &&
@@ -230,6 +238,7 @@ export class MockApiService {
   }
 
   async cancelAppointment(id: string): Promise<void> {
+    // Intentionally removed artificial delay for cancel action
     const raw = localStorage.getItem(APPOINTMENTS_KEY) || "[]";
     const appointments: Appointment[] = JSON.parse(raw);
     const updated = appointments.map((apt) =>
@@ -242,13 +251,14 @@ export class MockApiService {
   async askAIAssistant(
     symptoms: string,
   ): Promise<{ suggestion: string; reason: string }> {
+    // Artificial delays removed for instant response
     const rawDoctors = localStorage.getItem(DOCTORS_KEY);
     const doctors: Doctor[] = rawDoctors
       ? JSON.parse(rawDoctors)
       : MOCK_DOCTORS;
     const lowerSymptoms = symptoms.toLowerCase();
 
-    let doc = doctors[0];
+    let doc = doctors[0]; // default to GP
     if (lowerSymptoms.includes("heart") || lowerSymptoms.includes("chest")) {
       doc = doctors.find((d) => d.specialty === "Cardiology") || doc;
     } else if (

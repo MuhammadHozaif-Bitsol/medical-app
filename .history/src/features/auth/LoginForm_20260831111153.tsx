@@ -32,16 +32,27 @@ export const LoginForm: React.FC = () => {
   };
 
   const onSubmit = async (data: AuthFormData) => {
+    // ---> LOG ADDED HERE <---
+    console.log("1. FORM SUBMITTED - Raw Data:", data);
+
     setAuthError(null);
-    const cleanEmail = data.email.trim();
-    const cleanPassword = data.password.trim();
-
     try {
-      const user = isLoginMode
-        ? await login(cleanEmail, cleanPassword)
-        : await registerPatient(data.name.trim(), cleanEmail, cleanPassword);
+      if (isLoginMode) {
+        await login(data.email, data.password);
+      } else {
+        await registerPatient(data.name, data.email, data.password);
+      }
 
-      navigate(user.role === "staff" ? "/staff" : "/patient");
+      // Navigate based on the newly saved user in local storage
+      const storedUser = localStorage.getItem("auth_user");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        if (user.role === "staff") {
+          navigate("/staff");
+        } else {
+          navigate("/patient");
+        }
+      }
     } catch (error: any) {
       setAuthError(error.message || "Authentication failed. Please try again.");
     }

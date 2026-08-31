@@ -13,12 +13,12 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<User>;
+  login: (email: string, password: string) => Promise<void>;
   registerPatient: (
     name: string,
     email: string,
     password: string,
-  ) => Promise<User>;
+  ) => Promise<void>;
   logout: () => void;
 }
 
@@ -32,40 +32,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check local storage on mount
     const storedToken = localStorage.getItem("auth_token");
     const storedUser = localStorage.getItem("auth_user");
 
+    console.log("0. ON MOUNT - Stored User from Local Storage:", storedUser);
+
     if (storedToken && storedUser) {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch {
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_user");
-      }
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
     }
     setIsLoading(false);
   }, []);
 
-  const login = useCallback(
-    async (email: string, password: string): Promise<User> => {
-      setIsLoading(true);
-      try {
-        const response = await mockApi.login(email, password);
-        setToken(response.token);
-        setUser(response.user);
-        localStorage.setItem("auth_token", response.token);
-        localStorage.setItem("auth_user", JSON.stringify(response.user));
-        return response.user;
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [],
-  );
+  const login = useCallback(async (email: string, password: string) => {
+    // ---> LOG ADDED HERE <---
+    console.log("2. CONTEXT LOGIN TRIGGERED:", { email, password });
+
+    setIsLoading(true);
+    try {
+      const response = await mockApi.login(email, password);
+      setToken(response.token);
+      setUser(response.user);
+      localStorage.setItem("auth_token", response.token);
+      localStorage.setItem("auth_user", JSON.stringify(response.user));
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const registerPatient = useCallback(
-    async (name: string, email: string, password: string): Promise<User> => {
+    async (name: string, email: string, password: string) => {
+      // ---> LOG ADDED HERE <---
+      console.log("2. CONTEXT REGISTER TRIGGERED:", { name, email, password });
+
       setIsLoading(true);
       try {
         const response = await mockApi.registerPatient(name, email, password);
@@ -73,7 +73,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         setUser(response.user);
         localStorage.setItem("auth_token", response.token);
         localStorage.setItem("auth_user", JSON.stringify(response.user));
-        return response.user;
       } finally {
         setIsLoading(false);
       }
