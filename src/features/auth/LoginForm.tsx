@@ -32,7 +32,6 @@ export const LoginForm: React.FC = () => {
   };
 
   const onSubmit = async (data: AuthFormData) => {
-    setAuthError(null);
     const cleanEmail = data.email.trim();
     const cleanPassword = data.password.trim();
 
@@ -85,7 +84,7 @@ export const LoginForm: React.FC = () => {
           {...register("email", {
             required: "Email is required",
             pattern: {
-              value: /\S+@\S+\.\S+/,
+              value: /^[^\s@]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/,
               message: "Please enter a valid email address",
             },
           })}
