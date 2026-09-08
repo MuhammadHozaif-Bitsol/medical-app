@@ -1,0 +1,71 @@
+{
+  "users": [
+    {
+      "id": "s1",
+      "name": "Admin Staff",
+      "email": "staff@clinic.com",
+      "password": "password123",
+      "role": "staff"
+    }
+  ],
+  "doctors": [
+    {
+      "id": "d1",
+      "name": "Dr. Ayesha",
+      "specialty": "General Practice",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/44.jpg"
+    },
+    {
+      "id": "d2",
+      "name": "Dr. Bilal",
+      "specialty": "Cardiology",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/32.jpg"
+    },
+    {
+      "id": "d3",
+      "name": "Dr. Sana",
+      "specialty": "Neurology",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/68.jpg"
+    },
+    {
+      "id": "d4",
+      "name": "Dr. Usman",
+      "specialty": "Orthopedics",
+      "avatarUrl": "https://randomuser.me/api/portraits/men/75.jpg"
+    },
+    {
+      "id": "d5",
+      "name": "Dr. Fatima",
+      "specialty": "Pediatrics",
+      "avatarUrl": "https://randomuser.me/api/portraits/women/90.jpg"
+    }
+  ],
+  "appointments": [],
+  "schedules": [
+    {
+      "id": "d1",
+      "doctorId": "d1",
+      "slots": ["09:00", "09:30", "10:00", "11:30", "13:00", "14:30", "16:00"]
+    },
+    {
+      "id": "d2",
+      "doctorId": "d2",
+      "slots": ["09:00", "09:30", "10:00", "11:30", "13:00", "14:30", "16:00"]
+    },
+    {
+      "id": "d3",
+      "doctorId": "d3",
+      "slots": ["09:00", "09:30", "10:00", "11:30", "13:00", "14:30", "16:00"]
+    },
+    {
+      "id": "d4",
+      "doctorId": "d4",
+      "slots": ["09:00", "09:30", "10:00", "11:30", "13:00", "14:30", "16:00"]
+    },
+    {
+      "id": "d5",
+      "doctorId": "d5",
+      "slots": ["09:00", "09:30", "10:00", "11:30", "13:00", "14:30", "16:00"]
+    }
+  ]
+}
