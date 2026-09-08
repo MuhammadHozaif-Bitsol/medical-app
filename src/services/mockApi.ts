@@ -1,86 +1,23 @@
 import { format, parseISO } from "date-fns";
 import type { User, Doctor, Appointment, AuthResponse } from "../types";
 
-const DOCTORS_KEY = "booking_doctors";
-const APPOINTMENTS_KEY = "booking_appointments";
-const USERS_KEY = "booking_users";
-const SCHEDULES_KEY = "booking_schedules";
-
-const MOCK_DOCTORS: Doctor[] = [
-  {
-    id: "d1",
-    name: "Dr. Ayesha",
-    specialty: "General Practice",
-    avatarUrl: "https://randomuser.me/api/portraits/women/44.jpg",
-  },
-  {
-    id: "d2",
-    name: "Dr. Bilal",
-    specialty: "Cardiology",
-    avatarUrl: "https://randomuser.me/api/portraits/men/32.jpg",
-  },
-  {
-    id: "d3",
-    name: "Dr. Sana",
-    specialty: "Neurology",
-    avatarUrl: "https://randomuser.me/api/portraits/women/68.jpg",
-  },
-  {
-    id: "d4",
-    name: "Dr. Usman",
-    specialty: "Orthopedics",
-    avatarUrl: "https://randomuser.me/api/portraits/men/75.jpg",
-  },
-  {
-    id: "d5",
-    name: "Dr. Fatima",
-    specialty: "Pediatrics",
-    avatarUrl: "https://randomuser.me/api/portraits/women/90.jpg",
-  },
-];
-
-const MOCK_STAFF = {
-  id: "s1",
-  name: "Admin Staff",
-  email: "staff@clinic.com",
-  password: "password123",
-  role: "staff",
-};
-
-const delay = (ms: number = 200) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+const BASE_URL = "/api";
 
 export class MockApiService {
-  constructor() {
-    this.initializeData();
-  }
-
-  private initializeData() {
-    if (!localStorage.getItem(DOCTORS_KEY)) {
-      localStorage.setItem(DOCTORS_KEY, JSON.stringify(MOCK_DOCTORS));
-    }
-    if (!localStorage.getItem(APPOINTMENTS_KEY)) {
-      localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify([]));
-    }
-    if (!localStorage.getItem(USERS_KEY)) {
-      localStorage.setItem(USERS_KEY, JSON.stringify([MOCK_STAFF]));
-    }
-    if (!localStorage.getItem(SCHEDULES_KEY)) {
-      localStorage.setItem(SCHEDULES_KEY, JSON.stringify({}));
-    }
-  }
-
   // --- Auth ---
   async login(email: string, password: string): Promise<AuthResponse> {
-    await delay();
-    const users: any[] = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
     const normalizedEmail = email.toLowerCase().trim();
+    const cleanPassword = password.trim();
 
-    const user = users.find(
-      (u) =>
-        u.email.toLowerCase().trim() === normalizedEmail &&
-        u.password === password,
+    const res = await fetch(
+      `${BASE_URL}/users?email=${encodeURIComponent(normalizedEmail)}&password=${encodeURIComponent(cleanPassword)}`,
     );
+    if (!res.ok) {
+      throw new Error("Failed to connect to authentication service");
+    }
+    const users: Array<User & { password?: string }> = await res.json();
+
+    const user = users[0];
     if (!user) {
       throw new Error("Invalid email or password");
     }
@@ -100,30 +37,44 @@ export class MockApiService {
     email: string,
     password: string,
   ): Promise<AuthResponse> {
-    await delay();
-    const users: any[] = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
     const normalizedEmail = email.toLowerCase().trim();
+    const cleanName = name.trim();
+    const cleanPassword = password.trim();
 
-    if (users.some((u) => u.email.toLowerCase().trim() === normalizedEmail)) {
-      throw new Error("Email is already registered");
+    const checkRes = await fetch(
+      `${BASE_URL}/users?email=${encodeURIComponent(normalizedEmail)}`,
+    );
+    if (checkRes.ok) {
+      const existing: User[] = await checkRes.json();
+      if (existing.length > 0) {
+        throw new Error("Email is already registered");
+      }
     }
 
     const newUser = {
       id: `u_${crypto.randomUUID()}`,
-      name: name.trim(),
+      name: cleanName,
       email: normalizedEmail,
-      password,
+      password: cleanPassword,
       role: "patient" as const,
     };
 
-    users.push(newUser);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    const res = await fetch(`${BASE_URL}/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newUser),
+    });
 
+    if (!res.ok) {
+      throw new Error("Failed to register user");
+    }
+
+    const created: User = await res.json();
     const authUser: User = {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-      role: newUser.role,
+      id: created.id,
+      name: created.name,
+      email: created.email,
+      role: created.role,
     };
     const token = `mock_token_${crypto.randomUUID()}`;
     return { token, user: authUser };
@@ -131,30 +82,37 @@ export class MockApiService {
 
   // --- Doctors ---
   async getDoctors(): Promise<Doctor[]> {
-    await delay();
-    return JSON.parse(localStorage.getItem(DOCTORS_KEY) || "[]");
+    const res = await fetch(`${BASE_URL}/doctors`);
+    if (!res.ok) {
+      throw new Error("Failed to load doctors");
+    }
+    return res.json();
   }
 
   async addDoctor(doctor: Omit<Doctor, "id">): Promise<Doctor> {
-    await delay();
-    const doctors = await this.getDoctors();
     const newDoc = { ...doctor, id: `d_${crypto.randomUUID()}` };
-    doctors.push(newDoc);
-    localStorage.setItem(DOCTORS_KEY, JSON.stringify(doctors));
-    return newDoc;
+    const res = await fetch(`${BASE_URL}/doctors`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newDoc),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to add doctor");
+    }
+    return res.json();
   }
 
   async removeDoctor(doctorId: string): Promise<void> {
-    await delay();
-    const doctors = await this.getDoctors();
-    const filtered = doctors.filter((d) => d.id !== doctorId);
-    localStorage.setItem(DOCTORS_KEY, JSON.stringify(filtered));
+    const res = await fetch(`${BASE_URL}/doctors/${doctorId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      throw new Error("Failed to remove doctor");
+    }
   }
 
   // --- Schedules ---
   async getDoctorSchedule(doctorId: string): Promise<string[]> {
-    await delay(100);
-    const schedules = JSON.parse(localStorage.getItem(SCHEDULES_KEY) || "{}");
     const defaultSlots = [
       "09:00",
       "09:30",
@@ -164,27 +122,54 @@ export class MockApiService {
       "14:30",
       "16:00",
     ];
-    return schedules[doctorId] || defaultSlots;
+    try {
+      const res = await fetch(`${BASE_URL}/schedules/${doctorId}`);
+      if (!res.ok) {
+        return defaultSlots;
+      }
+      const data = await res.json();
+      return data.slots || defaultSlots;
+    } catch {
+      return defaultSlots;
+    }
   }
 
   async updateDoctorSchedule(doctorId: string, slots: string[]): Promise<void> {
-    await delay(300);
-    const schedules = JSON.parse(localStorage.getItem(SCHEDULES_KEY) || "{}");
-    schedules[doctorId] = slots;
-    localStorage.setItem(SCHEDULES_KEY, JSON.stringify(schedules));
+    const checkRes = await fetch(`${BASE_URL}/schedules/${doctorId}`);
+    if (checkRes.ok) {
+      const res = await fetch(`${BASE_URL}/schedules/${doctorId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: doctorId, doctorId, slots }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update schedule");
+      }
+    } else {
+      const res = await fetch(`${BASE_URL}/schedules`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: doctorId, doctorId, slots }),
+      });
+      if (!res.ok) {
+        throw new Error("Failed to update schedule");
+      }
+    }
   }
 
   // --- Appointments ---
   async getAppointments(): Promise<Appointment[]> {
-    await delay();
-    return JSON.parse(localStorage.getItem(APPOINTMENTS_KEY) || "[]");
+    const res = await fetch(`${BASE_URL}/appointments`);
+    if (!res.ok) {
+      throw new Error("Failed to load appointments");
+    }
+    return res.json();
   }
 
   async getAvailableSlots(
     doctorId: string,
     dateStr: string,
   ): Promise<string[]> {
-    await delay(100);
     const allSlots = await this.getDoctorSchedule(doctorId);
     const appointments = await this.getAppointments();
 
@@ -205,7 +190,6 @@ export class MockApiService {
   async bookAppointment(
     appointment: Omit<Appointment, "id" | "status">,
   ): Promise<Appointment> {
-    await delay();
     const appointments = await this.getAppointments();
 
     const isTaken = appointments.some(
@@ -224,28 +208,37 @@ export class MockApiService {
       id: `apt_${crypto.randomUUID()}`,
       status: "confirmed",
     };
-    appointments.push(newAppointment);
-    localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(appointments));
-    return newAppointment;
+
+    const res = await fetch(`${BASE_URL}/appointments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newAppointment),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to book appointment");
+    }
+
+    return res.json();
   }
 
   async cancelAppointment(id: string): Promise<void> {
-    const raw = localStorage.getItem(APPOINTMENTS_KEY) || "[]";
-    const appointments: Appointment[] = JSON.parse(raw);
-    const updated = appointments.map((apt) =>
-      apt.id === id ? { ...apt, status: "cancelled" as const } : apt,
-    );
-    localStorage.setItem(APPOINTMENTS_KEY, JSON.stringify(updated));
+    const res = await fetch(`${BASE_URL}/appointments/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "cancelled" }),
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to cancel appointment");
+    }
   }
 
   // --- AI Assistant ---
   async askAIAssistant(
     symptoms: string,
   ): Promise<{ suggestion: string; reason: string }> {
-    const rawDoctors = localStorage.getItem(DOCTORS_KEY);
-    const doctors: Doctor[] = rawDoctors
-      ? JSON.parse(rawDoctors)
-      : MOCK_DOCTORS;
+    const doctors = await this.getDoctors();
     const lowerSymptoms = symptoms.toLowerCase();
 
     let doc = doctors[0];
