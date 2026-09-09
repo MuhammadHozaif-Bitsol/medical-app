@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
+import { normalizeErrorMessage } from "../../utils/errorHandler";
 
 interface AuthFormData {
   name: string;
@@ -41,8 +42,8 @@ export const LoginForm: React.FC = () => {
         : await registerPatient(data.name.trim(), cleanEmail, cleanPassword);
 
       navigate(user.role === "staff" ? "/staff" : "/patient");
-    } catch (error: any) {
-      setAuthError(error.message || "Authentication failed. Please try again.");
+    } catch (error: unknown) {
+      setAuthError(normalizeErrorMessage(error));
     }
   };
 
@@ -98,8 +99,8 @@ export const LoginForm: React.FC = () => {
           {...register("password", {
             required: "Password is required",
             minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters",
+              value: 8,
+              message: "Password must be at least 8 characters",
             },
           })}
           error={errors.password?.message}
