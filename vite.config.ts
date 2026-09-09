@@ -11,6 +11,9 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
   ],
   server: {
+    watch: {
+      ignored: ["**/db.json"],
+    },
     proxy: {
       "/api": {
         target: "http://localhost:3001",
