@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/seed.js && concurrently -n \"vite,server\" -c \"blue,green\" \"vite\" \"json-server --watch db.json --port 3001\"",
+    "dev": "node scripts/seed.js && concurrently -n \"vite,server\" -c \"blue,green\" \"vite\" \"node server.js\"",
     "dev:vite": "vite",
-    "server": "json-server --watch db.json --port 3001",
+    "server": "node server.js",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
