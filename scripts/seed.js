@@ -60,6 +60,13 @@ const DEFAULT_SLOTS = [
 ];
 
 function runSeed() {
+  const isForce = process.argv.includes("--force") || process.argv.includes("--reset");
+
+  if (!isForce && fs.existsSync(DB_PATH)) {
+    console.log("[seed] Existing db.json found. Ready to serve.");
+    return;
+  }
+
   const schedules = DEFAULT_DOCTORS.map((doc) => ({
     id: doc.id,
     doctorId: doc.id,
@@ -75,7 +82,7 @@ function runSeed() {
 
   fs.writeFileSync(DB_PATH, JSON.stringify(initialData, null, 2) + "\n", "utf8");
 
-  console.log("[seed] Database reset to initial state successfully.");
+  console.log(`[seed] ${isForce ? "Database reset" : "Database initialized"} successfully.`);
   console.log(`  - Users: ${initialData.users.length} (Staff only)`);
   console.log(`  - Doctors: ${initialData.doctors.length}`);
   console.log(`  - Schedules: ${initialData.schedules.length}`);
