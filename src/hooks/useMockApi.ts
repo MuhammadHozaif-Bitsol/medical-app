@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { mockApi } from "../services/mockApi";
+import { normalizeErrorMessage } from "../utils/errorHandler";
 
 export function useMockApi() {
   const [isLoading, setIsLoading] = useState(false);
@@ -13,8 +14,7 @@ export function useMockApi() {
         const result = await apiCall();
         return result;
       } catch (err) {
-        const msg =
-          err instanceof Error ? err.message : "An unknown error occurred";
+        const msg = normalizeErrorMessage(err);
         setError(msg);
         return null;
       } finally {

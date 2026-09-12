@@ -1,13 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../ui/Button";
+import { Modal } from "../ui/Modal";
 
 export const MainLayout: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
-  const handleLogout = () => {
+  const handleConfirmLogout = () => {
+    setShowConfirmLogout(false);
     logout();
     navigate("/login");
   };
@@ -31,7 +34,7 @@ export const MainLayout: React.FC = () => {
               </span>
               <Button
                 variant="outline"
-                onClick={handleLogout}
+                onClick={() => setShowConfirmLogout(true)}
                 className="text-sm py-1"
               >
                 Sign Out
@@ -44,6 +47,32 @@ export const MainLayout: React.FC = () => {
       <main className="grow max-w-7xl mx-auto w-full px-4 py-8">
         <Outlet />
       </main>
+
+      <Modal
+        isOpen={showConfirmLogout}
+        onClose={() => setShowConfirmLogout(false)}
+        title="Confirm Sign Out"
+      >
+        <div className="space-y-4">
+          <p className="text-slate-600">
+            Are you sure you want to sign out of your account?
+          </p>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmLogout(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleConfirmLogout}
+            >
+              Yes, Sign Out
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

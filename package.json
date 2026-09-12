@@ -4,10 +4,13 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/seed.js && concurrently -n \"vite,server\" -c \"blue,green\" \"vite\" \"json-server --watch db.json --port 3001\"",
+    "dev:vite": "vite",
+    "server": "json-server --watch db.json --port 3001",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "node scripts/seed.js --force"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -31,10 +34,12 @@
     "@types/react-lazy-load-image-component": "^1.6.5",
     "@vitejs/plugin-react": "^6.1.0",
     "babel-plugin-react-compiler": "^1.0.0",
+    "concurrently": "^10.0.5",
     "eslint": "^10.9.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.4",
     "globals": "^17.11.0",
+    "json-server": "^1.0.0-beta.15",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.67.0",
     "vite": "^8.2.2"

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
+import { normalizeErrorMessage } from "../../utils/errorHandler";
 
 interface AuthFormData {
   name: string;
@@ -32,7 +33,6 @@ export const LoginForm: React.FC = () => {
   };
 
   const onSubmit = async (data: AuthFormData) => {
-    setAuthError(null);
     const cleanEmail = data.email.trim();
     const cleanPassword = data.password.trim();
 
@@ -42,8 +42,8 @@ export const LoginForm: React.FC = () => {
         : await registerPatient(data.name.trim(), cleanEmail, cleanPassword);
 
       navigate(user.role === "staff" ? "/staff" : "/patient");
-    } catch (error: any) {
-      setAuthError(error.message || "Authentication failed. Please try again.");
+    } catch (error: unknown) {
+      setAuthError(normalizeErrorMessage(error));
     }
   };
 
@@ -85,7 +85,7 @@ export const LoginForm: React.FC = () => {
           {...register("email", {
             required: "Email is required",
             pattern: {
-              value: /\S+@\S+\.\S+/,
+              value: /^[^\s@]+@(?:[a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/,
               message: "Please enter a valid email address",
             },
           })}
@@ -99,8 +99,8 @@ export const LoginForm: React.FC = () => {
           {...register("password", {
             required: "Password is required",
             minLength: {
-              value: 6,
-              message: "Password must be at least 6 characters",
+              value: 8,
+              message: "Password must be at least 8 characters",
             },
           })}
           error={errors.password?.message}

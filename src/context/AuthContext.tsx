@@ -32,16 +32,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("auth_token");
-    const storedUser = localStorage.getItem("auth_user");
+    // Check session storage on mount
+    const storedToken = sessionStorage.getItem("auth_token");
+    const storedUser = sessionStorage.getItem("auth_user");
 
     if (storedToken && storedUser) {
       try {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
       } catch {
-        localStorage.removeItem("auth_token");
-        localStorage.removeItem("auth_user");
+        sessionStorage.removeItem("auth_token");
+        sessionStorage.removeItem("auth_user");
       }
     }
     setIsLoading(false);
@@ -54,8 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await mockApi.login(email, password);
         setToken(response.token);
         setUser(response.user);
-        localStorage.setItem("auth_token", response.token);
-        localStorage.setItem("auth_user", JSON.stringify(response.user));
+        sessionStorage.setItem("auth_token", response.token);
+        sessionStorage.setItem("auth_user", JSON.stringify(response.user));
         return response.user;
       } finally {
         setIsLoading(false);
@@ -71,8 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const response = await mockApi.registerPatient(name, email, password);
         setToken(response.token);
         setUser(response.user);
-        localStorage.setItem("auth_token", response.token);
-        localStorage.setItem("auth_user", JSON.stringify(response.user));
+        sessionStorage.setItem("auth_token", response.token);
+        sessionStorage.setItem("auth_user", JSON.stringify(response.user));
         return response.user;
       } finally {
         setIsLoading(false);
@@ -84,8 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("auth_token");
-    localStorage.removeItem("auth_user");
+    sessionStorage.removeItem("auth_token");
+    sessionStorage.removeItem("auth_user");
   }, []);
 
   const value = useMemo(
