@@ -238,22 +238,23 @@ export class MockApiService {
   async askAIAssistant(
     symptoms: string,
   ): Promise<{ suggestion: string; reason: string }> {
-    const doctors = await this.getDoctors();
-    const lowerSymptoms = symptoms.toLowerCase();
+    const res = await fetch(`${BASE_URL}/assistant`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ symptoms }),
+    });
 
-    let doc = doctors[0];
-    if (lowerSymptoms.includes("heart") || lowerSymptoms.includes("chest")) {
-      doc = doctors.find((d) => d.specialty === "Cardiology") || doc;
-    } else if (
-      lowerSymptoms.includes("head") ||
-      lowerSymptoms.includes("brain")
-    ) {
-      doc = doctors.find((d) => d.specialty === "Neurology") || doc;
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.error) {
+      throw new Error(
+        data?.error || "AI assistant is not available right now.",
+      );
     }
 
     return {
-      suggestion: doc.id,
-      reason: `Based on your symptoms, a specialist in ${doc.specialty} (${doc.name}) might be suitable.`,
+      suggestion: data.suggestion,
+      reason: data.reason,
     };
   }
 }

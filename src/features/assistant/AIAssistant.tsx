@@ -4,7 +4,7 @@ import type { Doctor } from "../../types";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { DoctorCard } from "../../components/ui/DoctorCard";
-import { Bot, AlertCircle } from "lucide-react";
+import { Bot, AlertCircle, Loader2 } from "lucide-react";
 
 export const AIAssistant: React.FC = () => {
   const [symptoms, setSymptoms] = useState("");
@@ -17,23 +17,40 @@ export const AIAssistant: React.FC = () => {
   const { api, execute, isLoading, error } = useMockApi();
 
   // Fetch the doctors list in the background so we can display the full DoctorCard
-  // when the AI returns a doctor ID.
+  // when the AI returns a doctor ID, without setting the AI loading state.
   useEffect(() => {
-    execute(() => api.getDoctors()).then((res) => {
-      if (res) setDoctors(res);
-    });
-  }, [api, execute]);
+    let isMounted = true;
+    api
+      .getDoctors()
+      .then((res) => {
+        if (isMounted && res) setDoctors(res);
+      })
+      .catch(() => {
+        // Silently catch background pre-fetch error
+      });
 
-  const submitAction = async () => {
-    if (!symptoms.trim()) return;
+    return () => {
+      isMounted = false;
+    };
+  }, [api]);
+
+  const submitAction = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const query = symptoms.trim();
+    if (!query || isLoading) return;
 
     setResult(null); // Clear previous results
 
     // Call the mock AI endpoint
-    const response = await execute(() => api.askAIAssistant(symptoms));
+    const response = await execute(() => api.askAIAssistant(query));
 
-    if (response && doctors.length > 0) {
-      const matchedDoctor = doctors.find((d) => d.id === response.suggestion);
+    if (response) {
+      let currentDoctors = doctors;
+      if (currentDoctors.length === 0) {
+        currentDoctors = (await api.getDoctors().catch(() => [])) || [];
+        setDoctors(currentDoctors);
+      }
+      const matchedDoctor = currentDoctors.find((d) => d.id === response.suggestion);
       if (matchedDoctor) {
         setResult({ doctor: matchedDoctor, reason: response.reason });
       }
@@ -55,33 +72,62 @@ export const AIAssistant: React.FC = () => {
         </div>
       </div>
 
-      <form action={submitAction} className="flex gap-2 mb-4">
-        <Input
-          placeholder="e.g., I have been experiencing severe chest pain..."
-          value={symptoms}
-          onChange={(e) => setSymptoms(e.target.value)}
-          disabled={isLoading}
-          className="grow"
-        />
-        <Button type="submit" isLoading={isLoading} disabled={!symptoms.trim()}>
+      <form onSubmit={submitAction} className="flex items-start gap-2 mb-4">
+        <div className="grow">
+          <Input
+            placeholder="e.g., I have been experiencing severe chest pain..."
+            value={symptoms}
+            onChange={(e) => setSymptoms(e.target.value)}
+            disabled={isLoading}
+            className="h-10"
+          />
+        </div>
+        <Button
+          type="submit"
+          isLoading={isLoading}
+          disabled={!symptoms.trim() || isLoading}
+          className="h-10 whitespace-nowrap px-4 shrink-0"
+        >
           Ask AI
         </Button>
       </form>
 
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+      {/* Loading state while waiting for AI response */}
+      {isLoading && (
+        <div
+          role="status"
+          aria-label="Loading"
+          className="mt-6 pt-6 border-t border-slate-100 flex items-center justify-center py-8 animate-in fade-in duration-200"
+        >
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+        </div>
+      )}
 
-      {result && (
+      {error && !isLoading && (
+        <div className="mb-4 p-3.5 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200 flex items-start gap-2">
+          <AlertCircle size={18} className="shrink-0 mt-0.5 text-red-600" />
+          <p className="font-medium">{error}</p>
+        </div>
+      )}
+
+      {result && !isLoading && (
         <div className="mt-6 pt-6 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-4 duration-500">
-          <div className="flex items-start gap-2 mb-4 text-amber-700 bg-amber-50 p-3 rounded-md border border-amber-200 text-sm">
-            <AlertCircle size={18} className="shrink-0 mt-0.5" />
-            <p>
-              <strong>Disclaimer:</strong> This is an AI suggestion, not a
-              medical diagnosis.
-            </p>
+          <div className="flex items-start gap-2.5 mb-4 text-amber-800 bg-amber-50/90 p-3.5 rounded-lg border border-amber-200 text-sm shadow-xs">
+            <AlertCircle size={18} className="shrink-0 mt-0.5 text-amber-600" />
+            <div>
+              <span className="font-semibold text-amber-900 block sm:inline">
+                Medical Disclaimer:{" "}
+              </span>
+              <span>
+                This is an AI suggestion, not a medical diagnosis. Please
+                consult a qualified healthcare professional for urgent or severe
+                symptoms.
+              </span>
+            </div>
           </div>
 
           <p className="text-slate-700 font-medium mb-3">
-            <span className="text-blue-600 font-bold">Reasoning:</span>
+            <span className="text-blue-600 font-bold">Reasoning: </span>
             {result.reason}
           </p>
 

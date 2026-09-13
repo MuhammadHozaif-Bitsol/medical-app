@@ -14,3 +14,7 @@ Native browser date handling frequently causes cross-timezone bugs. We used `dat
 
 ### 5. Mocking JWT Authentication
 We simulated real authentication by generating and storing mock JSON Web Tokens (JWTs). This lets our frontend manage secure user sessions and roles exactly like a production application would.
+
+### 6. AI Assistant Loading State & Race Condition Prevention
+When the user clicks 'Ask AI', we set an `isLoading` boolean state to true and clear any previous results or errors. During the request, both the input field and submit button are disabled to prevent duplicate submissions and race conditions. The reusable Button component renders an animated SVG spinner using Tailwind's `animate-spin` to give immediate visual feedback.
+
